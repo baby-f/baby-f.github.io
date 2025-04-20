@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>frida学习</title>
+    <url>/2025/04/20/frida%E5%AD%A6%E4%B9%A0/</url>
+    <content><![CDATA[<h1 id="frida0x1-Java层"><a href="#frida0x1-Java层" class="headerlink" title="frida0x1  (Java层)"></a>frida0x1  (Java层)</h1><p>打开app看到这样一个页面，看上去是  输入数字，正确的话给flag</p>
+<p><img src="/../../images/frida%E5%AD%A6%E4%B9%A0/image-20250420183249013.png" alt="image-20250420183249013"></p>
+<p>打开jadx看看反编译</p>
+<p><img src="/../../images/frida%E5%AD%A6%E4%B9%A0/image-20250420190532668.png" alt="image-20250420190532668"></p>
+<p>监听了button的点击，如果点击了会获取输入（obj）判断是不是只包含数字字符，如果是就将obj从string类型转为整数类型，进入check方法与i比较</p>
+<p>check方法检验输入的i2是否符合检验标准：i2&#x3D;2i+4 ，符合的话就会执行解密将flag输出在页面上（textView）</p>
+<p><img src="/../../images/frida%E5%AD%A6%E4%B9%A0/image-20250420191540747.png" alt="image-20250420191540747"></p>
+<p>但i是get_random随机获取的，若要获得flag就要使得i2&#x3D;2i+4，才能继续往下执行解密</p>
+<p><img src="/../../images/frida%E5%AD%A6%E4%B9%A0/image-20250420191757557.png" alt="image-20250420191757557"></p>
+<p><img src="/../../images/frida%E5%AD%A6%E4%B9%A0/image-20250420191958059.png" alt="image-20250420191958059"></p>
+<h2 id="方法1：hook-get-random方法"><a href="#方法1：hook-get-random方法" class="headerlink" title="方法1：hook get_random方法"></a>方法1：hook get_random方法</h2><p>可以hook <strong>get_random</strong>方法，返回它获取的数字，再将符合检查标准的i2值计算并输出，届时在界面手动输入即可获得flag</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="title class_">Java</span>.<span class="title function_">perform</span>(<span class="keyword">function</span>(<span class="params"></span>) &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> hook = <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;com.ad2001.frida0x1.MainActivity&quot;</span>);</span><br><span class="line">  hook.<span class="property">get_random</span>.<span class="property">implementation</span> = <span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line"></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;成功hook&quot;</span>);</span><br><span class="line">    <span class="keyword">var</span> i = <span class="variable language_">this</span>.<span class="title function_">get_random</span>();</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;返回值是 &quot;</span> + i)</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;输入 &quot;</span> + (i * <span class="number">2</span> + <span class="number">4</span> )) </span><br><span class="line">    <span class="keyword">return</span> i; </span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="/../../images/frida%E5%AD%A6%E4%B9%A0/image-20250420195013304.png" alt="image-20250420195013304"></p>
+<p><img src="/../../images/frida%E5%AD%A6%E4%B9%A0/image-20250420195031063.png" alt="image-20250420195031063"></p>
+<p>或者稍微改动一下，将返回值设置成便于计算的数字，再将输入值计算并输出，一样是手动在界面输入获得flag(其实没两样)</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="title class_">Java</span>.<span class="title function_">perform</span>(<span class="keyword">function</span>(<span class="params"></span>) &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> a= <span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;com.ad2001.frida0x1.MainActivity&quot;</span>);</span><br><span class="line">  a.<span class="property">get_random</span>.<span class="property">implementation</span> = <span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line"></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;返回值永为 6&quot;</span>)</span><br><span class="line">    <span class="keyword">var</span> i2 =<span class="number">2</span>*<span class="number">6</span>+<span class="number">4</span>;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;输入值为&quot;</span>+i2);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">6</span>;</span><br><span class="line">      </span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="/../../images/frida%E5%AD%A6%E4%B9%A0/image-20250420195000475.png" alt="image-20250420195000475"></p>
+<p><img src="/../../images/frida%E5%AD%A6%E4%B9%A0/image-20250420194824568.png" alt="image-20250420194824568"></p>
+<h2 id="方法2：hook-check方法"><a href="#方法2：hook-check方法" class="headerlink" title="方法2：hook check方法"></a>方法2：hook check方法</h2><p>check接受两个参数，hook check方法，更改传入的参数，使传入的两个数字恒符合判断标准</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="title class_">Java</span>.<span class="title function_">perform</span>(<span class="keyword">function</span>(<span class="params"></span>) &#123;</span><br><span class="line"></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;hook成功！任意输入数字即可解锁&quot;</span>)</span><br><span class="line">    <span class="keyword">var</span> aaa=<span class="title class_">Java</span>.<span class="title function_">use</span>(<span class="string">&quot;com.ad2001.frida0x1.MainActivity&quot;</span>);</span><br><span class="line">    aaa.<span class="property">check</span>.<span class="title function_">overload</span>(<span class="string">&#x27;int&#x27;</span>,<span class="string">&#x27;int&#x27;</span>).<span class="property">implementation</span>=<span class="keyword">function</span>(<span class="params">a,b</span>)&#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;i值为&quot;</span>+a);       <span class="comment">//看一下随机数i是多少</span></span><br><span class="line">        <span class="keyword">var</span> new_b=<span class="number">2</span>*a+<span class="number">4</span></span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;传入的i2值为&quot;</span>+new_b);  <span class="comment">//看一下实际传入的是多少（这时候我们在应用程序界面输入的数字不起作用）</span></span><br><span class="line">        </span><br><span class="line">        </span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="title function_">check</span>(a,new_b);<span class="comment">//这里的a和new_b可以换成符合标准的两个数字，如：(1，6)</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="/../../images/frida%E5%AD%A6%E4%B9%A0/image-20250420201105713.png" alt="image-20250420201105713"></p>
+]]></content>
+      <tags>
+        <tag>frida-labs</tag>
+      </tags>
+  </entry>
+</search>
