@@ -3,7 +3,9 @@
   <entry>
     <title>frida学习</title>
     <url>/2025/04/20/frida%E5%AD%A6%E4%B9%A0/</url>
-    <content><![CDATA[<h1 id="frida0x1-Java层"><a href="#frida0x1-Java层" class="headerlink" title="frida0x1  (Java层)"></a>frida0x1  (Java层)</h1><p>打开app看到这样一个页面，看上去是  输入数字，正确的话给flag</p>
+    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>学习一下Frida，跟着frida-labs学</p>
+<p>frida-labs：<a href="https://github.com/DERE-ad2001/Frida-Labs">https://github.com/DERE-ad2001/Frida-Labs</a></p>
+<h1 id="frida0x1-Java层"><a href="#frida0x1-Java层" class="headerlink" title="frida0x1  (Java层)"></a>frida0x1  (Java层)</h1><p>打开app看到这样一个页面，看上去是  输入数字，正确的话给flag</p>
 <p><img src="/../../images/frida%E5%AD%A6%E4%B9%A0/image-20250420183249013.png" alt="image-20250420183249013"></p>
 <p>打开jadx看看反编译</p>
 <p><img src="/../../images/frida%E5%AD%A6%E4%B9%A0/image-20250420190532668.png" alt="image-20250420190532668"></p>
